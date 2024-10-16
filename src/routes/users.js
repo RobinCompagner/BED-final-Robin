@@ -68,6 +68,7 @@ router.delete("/:id", async (req, res, next) => {
   }
 });
 // auth, 
+// my code
 /* router.put("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -87,7 +88,7 @@ router.delete("/:id", async (req, res, next) => {
     next(error);
   }
 }); */
-
+// chatgpt code review
 router.post("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -110,7 +111,7 @@ router.post("/:id", async (req, res, next) => {
       });
     }
   } catch (error) {
-    next(error);  // Handle errors gracefully
+    next(error);
   }
 });
 
