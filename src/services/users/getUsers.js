@@ -1,17 +1,30 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from '../../../prisma/prisma.js';
 
-const getUsers = async () => {
-  const prisma = new PrismaClient();
+const getUsers = async (filters = {}) => {
+  const { username, email } = filters;
+
+  const where = {};
+
+  if (username) {
+    where.username = {
+      equals: username,
+    };
+  }
+
+  if (email) {
+    where.email = {
+      equals: email,
+    };
+  }
+
   const users = await prisma.user.findMany({
+    where,
     select: {
       id: true,
       username: true,
-      name: true,
       email: true,
-      phoneNumber: true,
-      profilePicture: true
-      // select ensures password is not returned
-    },
+
+    }
   });
 
   return users;

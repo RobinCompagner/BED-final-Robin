@@ -1,12 +1,12 @@
 import prisma from '../../../prisma/prisma.js';
 
-const updateUserById = async (id, updatedUser) => {
+const updateHostById = async (id, updatedHost) => {
   try {
-    const user = await prisma.user.update({
+    const host = await prisma.host.update({
       where: { id },
-      data: updatedUser,
+      data: updatedHost,
     });
-    return user;
+    return host;
   } catch (error) {
     if (error.code === 'P2002') {
       throw new Error('Username already exists');
@@ -18,4 +18,4 @@ const updateUserById = async (id, updatedUser) => {
   }
 };
 
-export default updateUserById;
+export default updateHostById;

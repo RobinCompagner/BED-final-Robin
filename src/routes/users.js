@@ -1,125 +1,79 @@
 import { Router } from "express";
 import notFoundErrorHandler from '../middleware/notFoundErrorHandler.js';
-import getUsers from '../services/users/getUsers.js'
-import getUserById from "../services/users/getUserById.js";
-import createUser from "../services/users/createUser.js";
-import deleteUserById from "../services/users/deleteUserById.js";
-import updateUserById from "../services/users/updateUserById.js";
+import * as userService from '../services/users/exports.js';
 import auth from "../middleware/auth.js";
-// auth extracted from routers for testing purpose
-const router = Router()
 
+const router = Router();
+
+// Routes
 router.get("/", async (req, res, next) => {
   try {
-    const users = await getUsers()
+    const { username, email } = req.query;
+    const filters = {};
 
-    res.status(200).json(users)
+    if (username) filters.username = username;
+    if (email) filters.email = email;
+
+    const users = await userService.getUsers(filters);
+    res.status(200).json(users);
   } catch (error) {
-    next(error)
+    next(error);
   }
-},
-  notFoundErrorHandler
-)
+}, notFoundErrorHandler);
 
 router.get("/:id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const user = await getUserById(id);
-
+    const user = await userService.getUserById(req.params.id);
     if (!user) {
-      res.status(404).json({ message: `User with id ${id} not found` });
-    } else {
-      res.status(200).json(user);
+      return res.status(404).json({ message: `User with id ${req.params.id} not found` });
     }
+    res.status(200).json(user);
   } catch (error) {
     next(error);
   }
 });
-// auth, 
-router.post("/", async (req, res, next) => {
+
+router.post("/", auth, async (req, res, next) => {
   try {
-    console.log("Params createRoute:", req.params);  // Log the params (you already see the id correctly logged)
-    console.log("Body before destructuring createRoute:", req.body);  // Log req.body before destructuring
-    const { username, name, password, email, phoneNumber, profilePicture } = req.body;
-    const newUser = await createUser(username, name, password, email, phoneNumber, profilePicture);
+    const newUser = await userService.createUser(req.body);
     res.status(201).json(newUser);
   } catch (error) {
-    next(error);
+    if (error.message === 'Username or email already exists' || error.message === 'Invalid user data') {
+      res.status(400).json({ message: error.message });
+    } else {
+      next(error);
+    }
   }
 });
-// auth, 
-router.delete("/:id", async (req, res, next) => {
+
+router.delete("/:id", auth, async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const user = await deleteUserById(id);
-
-    if (user) {
-      res.status(200).send({
-        message: `User with id ${id} successfully deleted`,
-        user,
-      });
-    } else {
-      res.status(404).json({
-        message: `User with id ${id} not found`,
-      });
+    const deletedUserId = await userService.deleteUserById(req.params.id);
+    if (!deletedUserId) {
+      return res.status(404).json({ message: `User with id ${req.params.id} not found` });
     }
-  } catch (error) {
-    next(error);
-  }
-});
-// auth, 
-// my code
-/* router.put("/:id", async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const { username, name, password, email, phoneNumber, profilePicture } = req.body;
-    const user = await updateUserById(id, { username, name, password, email, phoneNumber, profilePicture });
-
-    if (user) {
-      res.status(200).send({
-        message: `User with id ${id} successfully updated`,
-      });
-    } else {
-      res.status(404).json({
-        message: `User with id ${id} not found`,
-      });
-    }
-  } catch (error) {
-    next(error);
-  }
-}); */
-// chatgpt code review
-router.post("/:id", async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    console.log("Params:", req.params);  // Log the params (you already see the id correctly logged)
-    console.log("Body before destructuring:", req.body);  // Log req.body before destructuring
-    const { username, name, password, email, phoneNumber, profilePicture } = req.body;
-    console.log(username);
-
-    // Call the update service
-    const updatedUser = await updateUserById(id, { username, name, password, email, phoneNumber, profilePicture });
-
-    if (updatedUser) {
-      res.status(200).send({
-        message: `User with id ${id} successfully updated`,
-        user: updatedUser  // Return the updated user details if necessary
-      });
-    } else {
-      res.status(404).json({
-        message: `User with id ${id} not found`,
-      });
-    }
+    res.status(200).json({
+      message: `User with id ${deletedUserId} successfully deleted`,
+      userId: deletedUserId,
+    });
   } catch (error) {
     next(error);
   }
 });
 
-// test post route
-router.post("/test", (req, res) => {
-  console.log("Request Body test:", req.body);
-  res.status(200).json(req.body);
+router.put("/:id", auth, async (req, res, next) => {
+  try {
+    const updatedUser = await userService.updateUserById(req.params.id, req.body);
+    if (!updatedUser) {
+      return res.status(404).json({ message: `User with id ${req.params.id} not found` });
+    }
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    if (error.message === 'Username already exists') {
+      return res.status(409).json({ message: 'Username already exists' });
+    }
+    next(error);
+  }
 });
 
-
-export default router
+export default router;

@@ -1,12 +1,17 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from '../../../prisma/prisma.js';
 
 const deleteUserById = async (id) => {
-  const prisma = new PrismaClient();
-  const user = await prisma.user.deleteMany({
-    where: { id },
-  });
-
-  return user.count > 0 ? id : null;
+  try {
+    const deletedUser = await prisma.user.delete({
+      where: { id },
+    });
+    return deletedUser.id;
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return null; // User not found
+    }
+    throw error;
+  }
 };
 
 export default deleteUserById;

@@ -16,3 +16,8 @@ express book app services not complete. lookup in github winc solutions
 '/:id/orders' is this a required line or is it redacted out by me and not deleted?
 
 ToDo:
+update booking fix
+
+For later:
+- the delete functions delete many things, check if this is correct and if it is needed to add conformation by the user
+

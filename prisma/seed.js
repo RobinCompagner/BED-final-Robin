@@ -1,12 +1,10 @@
-import { PrismaClient } from '@prisma/client'
+import prisma from './prisma.js'
 import amenitiesData from '../src/data/amenities.json' assert { type: 'json' }
 import bookingData from '../src/data/bookings.json' assert { type: 'json' }
 import hostsData from '../src/data/hosts.json' assert { type: 'json' }
 import propertiesData from '../src/data/properties.json' assert { type: 'json' }
 import reviewData from '../src/data/reviews.json' assert { type: 'json' }
 import usersData from '../src/data/users.json' assert { type: 'json' }
-
-const prisma = new PrismaClient({ log: ['query', 'info', 'warn', 'error'] })
 
 async function main() {
     // Object destructuring
@@ -66,6 +64,7 @@ async function main() {
             create: review
         })
     }
+    console.log("Reviews seeded.");
 
     // Upsert bookings
     for (const booking of bookings) {
@@ -76,8 +75,6 @@ async function main() {
         })
     }
     console.log("Bookings seeded.");
-
-
 
 }
 

@@ -2,12 +2,12 @@ import pkg from '@prisma/client';
 const { PrismaClientKnownRequestError } = pkg;
 import prisma from '../../../prisma/prisma.js';
 
-const createUser = async (userData) => {
+const createHost = async (hostData) => {
   try {
-    const user = await prisma.user.create({
-      data: userData,
+    const host = await prisma.host.create({
+      data: hostData,
     });
-    return user;
+    return host;
   } catch (error) {
     if (error instanceof PrismaClientKnownRequestError) {
       // Handle known Prisma errors
@@ -17,8 +17,8 @@ const createUser = async (userData) => {
       }
     }
     // For any other error, throw a generic bad request error
-    throw new Error('Invalid user data');
+    throw new Error('Invalid host data');
   }
 };
 
-export default createUser;
+export default createHost;
