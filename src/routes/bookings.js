@@ -1,10 +1,11 @@
 import { Router } from "express";
-import notFoundErrorHandler from '../middleware/notFoundErrorHandler.js';
 import * as bookingService from '../services/bookings/exports.js';
 import auth from "../middleware/auth.js";
 
 const router = Router();
 
+// Routes
+// Get bookings with filter for userID
 router.get("/", async (req, res, next) => {
     try {
         const { userId } = req.query;
@@ -17,13 +18,14 @@ router.get("/", async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-}, notFoundErrorHandler);
+});
 
+// Get booking by ID
 router.get("/:id", async (req, res, next) => {
     try {
         const booking = await bookingService.getBookingById(req.params.id);
-        if (!booking) {
-            return res.status(404).json({ message: `Booking with id ${req.params.id} not found` });
+        if (booking === null) {
+            return next(null); // This will trigger your 404 in the error handler
         }
         res.status(200).json(booking);
     } catch (error) {
@@ -31,41 +33,31 @@ router.get("/:id", async (req, res, next) => {
     }
 });
 
+// Create new booking 
 router.post("/", auth, async (req, res, next) => {
     try {
         const newBooking = await bookingService.createBooking(req.body);
-        res.status(201).json(newBooking);
-    } catch (error) {
-        if (error.message === 'Booking with these details already exists' || error.message === 'Invalid booking data') {
-            res.status(400).json({ message: error.message });
-        } else {
-            next(error);
-        }
-    }
-});
-
-router.put("/:id", auth, async (req, res, next) => {
-    try {
-        const updatedBooking = await bookingService.updateBookingById(req.params.id, req.body);
-        if (!updatedBooking) {
-            return res.status(404).json({ message: `Booking with id ${req.params.id} not found` });
-        }
-        res.status(200).json(updatedBooking);
+        res.status(201).json({ message: `Booking with id ${newBooking} successfully created` });
     } catch (error) {
         next(error);
     }
 });
 
+// Update booking by ID
+router.put("/:id", auth, async (req, res, next) => {
+    try {
+        const updatedBooking = await bookingService.updateBookingById(req.params.id, req.body);
+        res.status(200).json({ message: `Booking with id ${updatedBooking} successfully updated` });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Delete booking by ID
 router.delete("/:id", auth, async (req, res, next) => {
     try {
         const deletedBookingId = await bookingService.deleteBookingById(req.params.id);
-        if (!deletedBookingId) {
-            return res.status(404).json({ message: `Booking with id ${req.params.id} not found` });
-        }
-        res.status(200).json({
-            message: `Booking with id ${deletedBookingId} successfully deleted`,
-            bookingId: deletedBookingId,
-        });
+        res.status(200).json({ message: `Booking with id ${deletedBookingId} successfully deleted` });
     } catch (error) {
         next(error);
     }

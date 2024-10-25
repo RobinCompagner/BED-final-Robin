@@ -1,11 +1,11 @@
 import { Router } from "express";
-import notFoundErrorHandler from '../middleware/notFoundErrorHandler.js';
 import * as propertyService from '../services/properties/exports.js';
 import auth from "../middleware/auth.js";
 
 const router = Router();
 
-
+// Routes
+// Get all properties with filter for location, pricePerNight, and amenities
 router.get("/", async (req, res, next) => {
     try {
         const { location, pricePerNight, amenities } = req.query;
@@ -20,13 +20,14 @@ router.get("/", async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-}, notFoundErrorHandler);
+});
 
+// Get property by ID
 router.get("/:id", async (req, res, next) => {
     try {
         const property = await propertyService.getPropertyById(req.params.id);
-        if (!property) {
-            return res.status(404).json({ message: `Property with id ${req.params.id} not found` });
+        if (property === null) {
+            return next(null); // This will trigger your 404 in the error handler
         }
         res.status(200).json(property);
     } catch (error) {
@@ -34,44 +35,31 @@ router.get("/:id", async (req, res, next) => {
     }
 });
 
+// Create new property
 router.post("/", auth, async (req, res, next) => {
     try {
         const newProperty = await propertyService.createProperty(req.body);
-        res.status(201).json(newProperty);
+        res.status(201).json({ message: `Property with id ${newProperty} successfully created` });
     } catch (error) {
-        if (error.message === 'Property with this unique identifier already exists' || error.message === 'Invalid property data') {
-            res.status(400).json({ message: error.message });
-        } else {
-            next(error);
-        }
-    }
-});
-
-router.put("/:id", auth, async (req, res, next) => {
-    try {
-        const updatedProperty = await propertyService.updatePropertyById(req.params.id, req.body);
-        if (!updatedProperty) {
-            console.log(`Property with id ${req.params.id} not found`);
-            return res.status(404).json({ message: `Property with id ${req.params.id} not found` });
-        }
-        console.log('Sending successful response');
-        res.status(200).json(updatedProperty);
-    } catch (error) {
-        console.error('Error in PUT route:', error);
         next(error);
     }
 });
 
+// Update property by ID
+router.put("/:id", auth, async (req, res, next) => {
+    try {
+        const updatedProperty = await propertyService.updatePropertyById(req.params.id, req.body);
+        res.status(200).json({ message: `Property with id ${updatedProperty} successfully updated` });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Delete property by ID
 router.delete("/:id", auth, async (req, res, next) => {
     try {
         const deletedPropertyId = await propertyService.deletePropertyById(req.params.id);
-        if (!deletedPropertyId) {
-            return res.status(404).json({ message: `Property with id ${req.params.id} not found` });
-        }
-        res.status(200).json({
-            message: `Property with id ${deletedPropertyId} successfully deleted`,
-            propertyId: deletedPropertyId,
-        });
+        res.status(200).json({ message: `Property with id ${deletedPropertyId} successfully deleted` });
     } catch (error) {
         next(error);
     }

@@ -1,10 +1,11 @@
 import { Router } from "express";
-import notFoundErrorHandler from '../middleware/notFoundErrorHandler.js';
 import * as reviewService from '../services/reviews/exports.js';
 import auth from "../middleware/auth.js";
 
 const router = Router();
 
+// Routes
+// Get all reviews
 router.get("/", async (req, res, next) => {
     try {
         const reviews = await reviewService.getReviews();
@@ -12,55 +13,46 @@ router.get("/", async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-}, notFoundErrorHandler);
+});
 
+// Get review by ID
 router.get("/:id", async (req, res, next) => {
     try {
         const review = await reviewService.getReviewById(req.params.id);
-        if (!review) {
-            return res.status(404).json({ message: `Review with id ${req.params.id} not found` });
+        if (review === null) {
+            return next(null); // This will trigger your 404 in the error handler
         }
-        return res.status(200).json(review);
+        res.status(200).json(review);
     } catch (error) {
         next(error);
     }
 });
 
+// Create new review
 router.post("/", auth, async (req, res, next) => {
     try {
         const newReview = await reviewService.createReview(req.body);
-        res.status(201).json(newReview);
-    } catch (error) {
-        if (error.message === 'Review with these details already exists' || error.message === 'Invalid review data') {
-            res.status(400).json({ message: error.message });
-        } else {
-            next(error);
-        }
-    }
-});
-
-router.put("/:id", auth, async (req, res, next) => {
-    try {
-        const updatedReview = await reviewService.updateReviewById(req.params.id, req.body);
-        if (!updatedReview) {
-            return res.status(404).json({ message: `Review with id ${req.params.id} not found` });
-        }
-        return res.status(200).json(updatedReview);
+        res.status(201).json({ message: `Review with id ${newReview} successfully created` });
     } catch (error) {
         next(error);
     }
 });
 
+// Update review by ID
+router.put("/:id", auth, async (req, res, next) => {
+    try {
+        const updatedReview = await reviewService.updateReviewById(req.params.id, req.body);
+        res.status(200).json({ message: `Review with id ${updatedReview} successfully updated` });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Delete review by ID
 router.delete("/:id", auth, async (req, res, next) => {
     try {
         const deletedReviewId = await reviewService.deleteReviewById(req.params.id);
-
-        if (!deletedReviewId) {
-            return res.status(404).json({ message: `Review with id ${req.params.id} not found` });
-        } else {
-            res.status(200).json({ message: `Review with id ${deletedReviewId} successfully deleted` });
-        }
-
+        res.status(200).json({ message: `Review with id ${deletedReviewId} successfully deleted` });
     } catch (error) {
         next(error);
     }

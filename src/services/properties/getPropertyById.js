@@ -9,6 +9,8 @@ const getPropertyById = async (id) => {
         },
     });
 
+    console.log('Retrieved property:', JSON.stringify(property, null, 2));
+
     return property;
 };
 

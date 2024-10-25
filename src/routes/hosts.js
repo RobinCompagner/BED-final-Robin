@@ -1,10 +1,11 @@
 import { Router } from "express";
-import notFoundErrorHandler from '../middleware/notFoundErrorHandler.js';
 import * as hostService from '../services/hosts/exports.js';
 import auth from "../middleware/auth.js";
 
 const router = Router();
 
+// Routes
+// Get all hosts with filter for name
 router.get("/", async (req, res, next) => {
     try {
         const { name } = req.query;
@@ -17,13 +18,14 @@ router.get("/", async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-}, notFoundErrorHandler);
+});
 
+// Get host by ID
 router.get("/:id", async (req, res, next) => {
     try {
         const host = await hostService.getHostById(req.params.id);
-        if (!host) {
-            return res.status(404).json({ message: `Host with id ${req.params.id} not found` });
+        if (host === null) {
+            return next(null); // This will trigger your 404 in the error handler
         }
         res.status(200).json(host);
     } catch (error) {
@@ -31,45 +33,32 @@ router.get("/:id", async (req, res, next) => {
     }
 });
 
+// Create new host
 router.post("/", auth, async (req, res, next) => {
     try {
         const newHost = await hostService.createHost(req.body);
-        res.status(201).json(newHost);
-    } catch (error) {
-        if (error.message === 'Username or email already exists' || error.message === 'Invalid host data') {
-            res.status(400).json({ message: error.message });
-        } else {
-            next(error);
-        }
-    }
-});
-
-router.delete("/:id", auth, async (req, res, next) => {
-    try {
-        const deletedHostId = await hostService.deleteHostById(req.params.id);
-        if (!deletedHostId) {
-            return res.status(404).json({ message: `Host with id ${req.params.id} not found` });
-        }
-        res.status(200).json({
-            message: `Host with id ${deletedHostId} successfully deleted`,
-            hostId: deletedHostId,
-        });
+        res.status(201).json({ message: `Host with id ${newHost} successfully created` });
     } catch (error) {
         next(error);
     }
 });
 
+// Update host by ID
 router.put("/:id", auth, async (req, res, next) => {
     try {
         const updatedHost = await hostService.updateHostById(req.params.id, req.body);
-        if (!updatedHost) {
-            return res.status(404).json({ message: `Host with id ${req.params.id} not found` });
-        }
-        res.status(200).json(updatedHost);
+        res.status(200).json({ message: `Host with id ${updatedHost} successfully updated` });
     } catch (error) {
-        if (error.message === 'Username already exists') {
-            return res.status(409).json({ message: 'Username already exists' });
-        }
+        next(error);
+    }
+});
+
+// Delete host by ID
+router.delete("/:id", auth, async (req, res, next) => {
+    try {
+        const deletedHostId = await hostService.deleteHostById(req.params.id);
+        res.status(200).json({ message: `Host with id ${deletedHostId} successfully deleted` });
+    } catch (error) {
         next(error);
     }
 });

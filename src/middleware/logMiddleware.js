@@ -1,12 +1,19 @@
 import logger from '../utils/log.js'
 
 const log = (req, res, next) => {
-  const start = new Date()
+  const start = process.hrtime();
 
-  next()
+  res.on('finish', () => {
+    const diff = process.hrtime(start);
+    const duration = (diff[0] * 1e3 + diff[1] * 1e-6).toFixed(3);
+    logger.info({
+      message: `${req.method} ${req.originalUrl}`,
+      status: `Status: ${res.statusCode}`,
+      duration: `${duration} ms`
+    });
+  });
 
-  const ms = new Date() - start
-  logger.info(`${req.method} ${req.originalUrl}. Status: ${res.statusCode}. Duration: ${ms} ms`)
+  next();
 }
 
 export default log
