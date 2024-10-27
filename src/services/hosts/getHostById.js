@@ -11,6 +11,7 @@ const getHostById = async (id) => {
       phoneNumber: true,
       profilePicture: true,
       aboutMe: true
+      // Don't return password
     },
   });
 

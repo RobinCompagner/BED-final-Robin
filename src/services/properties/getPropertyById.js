@@ -8,9 +8,6 @@ const getPropertyById = async (id) => {
             amenities: true,
         },
     });
-
-    console.log('Retrieved property:', JSON.stringify(property, null, 2));
-
     return property;
 };
 

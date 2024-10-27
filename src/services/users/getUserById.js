@@ -11,7 +11,7 @@ const getUserById = async (id) => {
       email: true,
       phoneNumber: true,
       profilePicture: true
-      // select ensures password is not returned
+      // Don't return password
     },
   });
 
