@@ -21,6 +21,7 @@ const getHosts = async (filters = {}) => {
       phoneNumber: true,
       profilePicture: true,
       aboutMe: true
+      // Don't return password
     },
   });
 

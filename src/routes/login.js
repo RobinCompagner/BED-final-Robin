@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
     const { username, password } = req.body;
     const secretKey = process.env.AUTH_SECRET_KEY;
 
@@ -20,8 +20,7 @@ const login = async (req, res) => {
 
         res.status(200).json({ message: 'Successfully logged in!', token });
     } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ message: "Internal server error" });
+        next(error);
     }
 };
 

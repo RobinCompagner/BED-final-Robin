@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as reviewService from '../services/reviews/exports.js';
 import auth from "../middleware/auth.js";
+import { ValidationError } from "../middleware/validationHandler.js";
 
 const router = Router();
 
@@ -20,7 +21,7 @@ router.get("/:id", async (req, res, next) => {
     try {
         const review = await reviewService.getReviewById(req.params.id);
         if (review === null) {
-            return next(null); // This will trigger your 404 in the error handler
+            return next(null); // This will trigger 404 in the error handler
         }
         res.status(200).json(review);
     } catch (error) {
@@ -31,8 +32,20 @@ router.get("/:id", async (req, res, next) => {
 // Create new review
 router.post("/", auth, async (req, res, next) => {
     try {
+        const requiredFields = ['userId', 'propertyId', 'rating', 'comment'];
+
+        const missingFields = requiredFields.filter(field => !req.body[field]);
+
+        if (missingFields.length > 0) {
+            throw new ValidationError(`Missing required fields: ${missingFields.join(', ')}`);
+        }
+
         const newReview = await reviewService.createReview(req.body);
-        res.status(201).json({ message: `Review with id ${newReview} successfully created` });
+
+        res.status(201).json({
+            message: "Review successfully created",
+            review: newReview
+        });
     } catch (error) {
         next(error);
     }

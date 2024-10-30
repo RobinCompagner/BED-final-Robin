@@ -13,11 +13,10 @@ import errorHandler from "./middleware/errorHandler.js";
 
 // Initialize Sentry
 Sentry.init({
-  dsn: "https://eb4051c392dc4cee662a20698d1eb630@o4507772744695808.ingest.de.sentry.io/4508165800722512",
+  dsn: process.env.SENTRY_DSN,
 
   // Tracing
-  tracesSampleRate: 1.0, //  Capture 100% of the transactions
-  // Set sampling rate for profiling - this is relative to tracesSampleRate
+  tracesSampleRate: 1.0,
   profilesSampleRate: 1.0,
 });
 

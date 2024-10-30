@@ -22,7 +22,11 @@ const getUsers = async (filters = {}) => {
     select: {
       id: true,
       username: true,
+      name: true,
       email: true,
+      phoneNumber: true,
+      profilePicture: true
+      // Don't return password
 
     }
   });

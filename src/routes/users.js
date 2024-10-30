@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as userService from '../services/users/exports.js';
 import auth from "../middleware/auth.js";
+import { ValidationError } from "../middleware/validationHandler.js";
 
 const router = Router();
 
@@ -26,7 +27,7 @@ router.get("/:id", async (req, res, next) => {
   try {
     const user = await userService.getUserById(req.params.id);
     if (user === null) {
-      return next(null); // This will trigger your 404 in the error handler
+      return next(null); // This will trigger 404 in the error handler
     }
     res.status(200).json(user);
   } catch (error) {
@@ -37,8 +38,26 @@ router.get("/:id", async (req, res, next) => {
 // Create new user
 router.post("/", auth, async (req, res, next) => {
   try {
+    const requiredFields = ['username',
+      'password',
+      'name',
+      'email',
+      'phoneNumber',
+      'profilePicture'
+    ]; // Easy to adapt if more fields are added
+
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+
+    if (missingFields.length > 0) {
+      throw new ValidationError(`Missing required fields: ${missingFields.join(', ')}`);
+    }
+
     const newUser = await userService.createUser(req.body);
-    res.status(201).json({ message: `User with id ${newUser} successfully created` });
+
+    res.status(201).json({
+      message: `User with id ${newUser} successfully created`,
+      user: newUser
+    });
   } catch (error) {
     next(error);
   }

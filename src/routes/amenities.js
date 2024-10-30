@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as amenityService from '../services/amenities/exports.js';
 import auth from "../middleware/auth.js";
+import { ValidationError } from '../middleware/validationHandler.js';
 
 const router = Router();
 
@@ -20,7 +21,7 @@ router.get("/:id", async (req, res, next) => {
     try {
         const amenity = await amenityService.getAmenityById(req.params.id);
         if (amenity === null) {
-            return next(null); // This will trigger your 404 in the error handler
+            return next(null); // This will trigger 404 in the error handler
         }
         res.status(200).json(amenity);
     } catch (error) {
@@ -31,8 +32,20 @@ router.get("/:id", async (req, res, next) => {
 // Create new amenity
 router.post("/", auth, async (req, res, next) => {
     try {
+        // Input validation check
+        const requiredFields = ['name']; // Easy to adapt if more fields are added
+
+        const missingFields = requiredFields.filter(field => !req.body[field]);
+
+        if (missingFields.length > 0) {
+            throw new ValidationError(`Missing required fields: ${missingFields.join(', ')}`);
+        }
+
         const newAmenity = await amenityService.createAmenity(req.body);
-        res.status(201).json({ message: `Amenity with id ${newAmenity} successfully created` });
+        res.status(201).json({
+            message: "Amenity successfully created",
+            amenity: newAmenity
+        });
     } catch (error) {
         next(error);
     }
