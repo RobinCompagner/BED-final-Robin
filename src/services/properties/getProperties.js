@@ -12,9 +12,7 @@ const getProperties = async (filters = {}) => {
     }
 
     if (pricePerNight) {
-        where.pricePerNight = {
-            lte: parseFloat(pricePerNight)
-        };
+        where.pricePerNight = parseFloat(pricePerNight);
     }
 
     if (amenities && amenities.length > 0) {

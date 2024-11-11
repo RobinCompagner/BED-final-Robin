@@ -9,11 +9,12 @@ const router = Router();
 // Get all users with filter for username and email
 router.get("/", async (req, res, next) => {
   try {
-    const { username, email } = req.query;
+    const { username, email, id } = req.query;
     const filters = {};
 
     if (username) filters.username = username;
     if (email) filters.email = email;
+    if (id) filters.id = id;
 
     const users = await userService.getUsers(filters);
     res.status(200).json(users);
@@ -55,9 +56,10 @@ router.post("/", auth, async (req, res, next) => {
     const newUser = await userService.createUser(req.body);
 
     res.status(201).json({
-      message: `User with id ${newUser} successfully created`,
-      user: newUser
-    });
+      message: `User with id ${newUser.id} successfully created`,
+      ID: newUser.id,
+      username: newUser.username
+    }); // feedback received, user with id [object object] successfully created, i get the id there, not object
   } catch (error) {
     next(error);
   }

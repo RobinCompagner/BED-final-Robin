@@ -1,7 +1,7 @@
 import prisma from '../../../prisma/prisma.js';
 
 const getUsers = async (filters = {}) => {
-  const { username, email } = filters;
+  const { username, email, id } = filters;
 
   const where = {};
 
@@ -14,6 +14,12 @@ const getUsers = async (filters = {}) => {
   if (email) {
     where.email = {
       equals: email,
+    };
+  }
+
+  if (id) {
+    where.id = {
+      equals: id,
     };
   }
 
