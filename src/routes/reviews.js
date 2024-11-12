@@ -20,10 +20,11 @@ router.get("/", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
     try {
         const review = await reviewService.getReviewById(req.params.id);
-        if (review === null) {
-            return next(null); // This will trigger 404 in the error handler
+        if (review !== null) {
+            res.status(200).json(review);
+        } else {
+            res.status(404).json({ message: `Review with ID ${req.params.id} not found.` });
         }
-        res.status(200).json(review);
     } catch (error) {
         next(error);
     }
@@ -55,7 +56,11 @@ router.post("/", auth, async (req, res, next) => {
 router.put("/:id", auth, async (req, res, next) => {
     try {
         const updatedReview = await reviewService.updateReviewById(req.params.id, req.body);
-        res.status(200).json({ message: `Review with id ${updatedReview} successfully updated` });
+        if (updatedReview !== null) {
+            res.status(200).json({ message: `Review with id ${updatedReview.id} successfully updated` });
+        } else {
+            res.status(404).json({ message: `Review with ID ${req.params.id} not found.` });
+        }
     } catch (error) {
         next(error);
     }
@@ -65,7 +70,11 @@ router.put("/:id", auth, async (req, res, next) => {
 router.delete("/:id", auth, async (req, res, next) => {
     try {
         const deletedReviewId = await reviewService.deleteReviewById(req.params.id);
-        res.status(200).json({ message: `Review with id ${deletedReviewId} successfully deleted` });
+        if (deletedReviewId !== null) {
+            res.status(200).json({ message: `Review with id ${req.params.id} successfully deleted` });
+        } else {
+            res.status(404).json({ message: `Review with ID ${req.params.id} not found.` });
+        }
     } catch (error) {
         next(error);
     }

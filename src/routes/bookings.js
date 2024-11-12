@@ -25,10 +25,12 @@ router.get("/", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
     try {
         const booking = await bookingService.getBookingById(req.params.id);
-        if (booking === null) {
-            return next(null); // This will trigger 404 in the error handler
+        if (booking !== null) {
+            res.status(200).json(booking);
+        } else {
+            res.status(404).json({ message: `Booking with ID ${req.params.id} not found.` });
         }
-        res.status(200).json(booking);
+
     } catch (error) {
         next(error);
     }
@@ -69,7 +71,11 @@ router.post("/", auth, async (req, res, next) => {
 router.put("/:id", auth, async (req, res, next) => {
     try {
         const updatedBooking = await bookingService.updateBookingById(req.params.id, req.body);
-        res.status(200).json({ message: `Booking with id ${updatedBooking} successfully updated` });
+        if (updatedBooking !== null) {
+            res.status(200).json({ message: `Booking with id ${updatedBooking.id} successfully updated` });
+        } else {
+            res.status(404).json({ message: `Booking with ID ${req.params.id} not found.` });
+        }
     } catch (error) {
         next(error);
     }
@@ -79,7 +85,11 @@ router.put("/:id", auth, async (req, res, next) => {
 router.delete("/:id", auth, async (req, res, next) => {
     try {
         const deletedBookingId = await bookingService.deleteBookingById(req.params.id);
-        res.status(200).json({ message: `Booking with id ${deletedBookingId} successfully deleted` });
+        if (deletedBookingId !== null) {
+            res.status(200).json({ message: `Booking with id ${req.params.id} successfully deleted` });
+        } else {
+            res.status(404).json({ message: `Booking with ID ${req.params.id} not found.` });
+        }
     } catch (error) {
         next(error);
     }

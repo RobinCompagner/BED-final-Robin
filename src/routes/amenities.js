@@ -20,10 +20,11 @@ router.get("/", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
     try {
         const amenity = await amenityService.getAmenityById(req.params.id);
-        if (amenity === null) {
-            return next(null); // This will trigger 404 in the error handler
+        if (amenity !== null) {
+            res.status(200).json(amenity);
+        } else {
+            res.status(404).json({ message: `Amenity with ID ${req.params.id} not found.` });
         }
-        res.status(200).json(amenity);
     } catch (error) {
         next(error);
     }
@@ -55,7 +56,11 @@ router.post("/", auth, async (req, res, next) => {
 router.put("/:id", auth, async (req, res, next) => {
     try {
         const updatedAmenity = await amenityService.updateAmenityById(req.params.id, req.body);
-        res.status(200).json({ message: `Amenity with id ${updatedAmenity} successfully updated` });
+        if (updatedAmenity !== null) {
+            res.status(200).json({ message: `Amenity with id ${updatedAmenity.id} successfully updated` });
+        } else {
+            res.status(404).json({ message: `Amenity with ID ${req.params.id} not found.` });
+        }
     } catch (error) {
         next(error);
     }
@@ -65,7 +70,11 @@ router.put("/:id", auth, async (req, res, next) => {
 router.delete("/:id", auth, async (req, res, next) => {
     try {
         const deletedAmenityId = await amenityService.deleteAmenityById(req.params.id);
-        res.status(200).json({ message: `Amenity with id ${deletedAmenityId} successfully deleted` });
+        if (deletedAmenityId !== null) {
+            res.status(200).json({ message: `Amenity with id ${req.params.id} successfully deleted` });
+        } else {
+            res.status(404).json({ message: `Amenity with ID ${req.params.id} not found.` });
+        }
     } catch (error) {
         next(error);
     }

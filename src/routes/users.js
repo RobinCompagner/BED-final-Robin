@@ -27,10 +27,11 @@ router.get("/", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
   try {
     const user = await userService.getUserById(req.params.id);
-    if (user === null) {
-      return next(null); // This will trigger 404 in the error handler
+    if (user !== null) {
+      res.status(200).json(user);
+    } else {
+      res.status(404).json({ message: `User with ID ${req.params.id} not found.` });
     }
-    res.status(200).json(user);
   } catch (error) {
     next(error);
   }
@@ -69,7 +70,11 @@ router.post("/", auth, async (req, res, next) => {
 router.put("/:id", auth, async (req, res, next) => {
   try {
     const updatedUser = await userService.updateUserById(req.params.id, req.body);
-    res.status(200).json({ message: `User with id ${updatedUser} successfully updated` });
+    if (updatedUser !== null) {
+      res.status(200).json({ message: `User with id ${updatedUser.id} successfully updated` });
+    } else {
+      res.status(404).json({ message: `User with ID ${req.params.id} not found.` });
+    }
   } catch (error) {
     next(error);
   }
@@ -79,7 +84,11 @@ router.put("/:id", auth, async (req, res, next) => {
 router.delete("/:id", auth, async (req, res, next) => {
   try {
     const deletedUserId = await userService.deleteUserById(req.params.id);
-    res.status(200).json({ message: `User with id ${deletedUserId} successfully deleted` });
+    if (deletedUserId !== null) {
+      res.status(200).json({ message: `User with id ${req.params.id} successfully deleted` });
+    } else {
+      res.status(404).json({ message: `User with ID ${req.params.id} not found.` });
+    }
   } catch (error) {
     next(error);
   }

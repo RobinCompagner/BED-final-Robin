@@ -27,10 +27,11 @@ router.get("/", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
     try {
         const property = await propertyService.getPropertyById(req.params.id);
-        if (property === null) {
-            return next(null); // This will trigger 404 in the error handler
+        if (property !== null) {
+            res.status(200).json(property);
+        } else {
+            res.status(404).json({ message: `Property with ID ${req.params.id} not found.` });
         }
-        res.status(200).json(property);
     } catch (error) {
         next(error);
     }
@@ -72,7 +73,11 @@ router.post("/", auth, async (req, res, next) => {
 router.put("/:id", auth, async (req, res, next) => {
     try {
         const updatedProperty = await propertyService.updatePropertyById(req.params.id, req.body);
-        res.status(200).json({ message: `Property with id ${updatedProperty} successfully updated` });
+        if (updatedProperty !== null) {
+            res.status(200).json({ message: `Property with id ${updatedProperty.id} successfully updated` });
+        } else {
+            res.status(404).json({ message: `Property with ID ${req.params.id} not found.` });
+        }
     } catch (error) {
         next(error);
     }
@@ -82,7 +87,11 @@ router.put("/:id", auth, async (req, res, next) => {
 router.delete("/:id", auth, async (req, res, next) => {
     try {
         const deletedPropertyId = await propertyService.deletePropertyById(req.params.id);
-        res.status(200).json({ message: `Property with id ${deletedPropertyId} successfully deleted` });
+        if (deletedPropertyId !== null) {
+            res.status(200).json({ message: `Property with id ${req.params.id} successfully deleted` });
+        } else {
+            res.status(404).json({ message: `Property with ID ${req.params.id} not found.` });
+        }
     } catch (error) {
         next(error);
     }

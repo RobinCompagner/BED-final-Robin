@@ -25,10 +25,11 @@ router.get("/", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
     try {
         const host = await hostService.getHostById(req.params.id);
-        if (host === null) {
-            return next(null); // This will trigger 404 in the error handler
+        if (host !== null) {
+            res.status(200).json(host);
+        } else {
+            res.status(404).json({ message: `Host with ID ${req.params.id} not found.` });
         }
-        res.status(200).json(host);
     } catch (error) {
         next(error);
     }
@@ -68,7 +69,11 @@ router.post("/", auth, async (req, res, next) => {
 router.put("/:id", auth, async (req, res, next) => {
     try {
         const updatedHost = await hostService.updateHostById(req.params.id, req.body);
-        res.status(200).json({ message: `Host with id ${updatedHost} successfully updated` });
+        if (updatedHost !== null) {
+            res.status(200).json({ message: `Host with id ${updatedHost.id} successfully updated` });
+        } else {
+            res.status(404).json({ message: `Host with ID ${req.params.id} not found.` });
+        }
     } catch (error) {
         next(error);
     }
@@ -78,7 +83,11 @@ router.put("/:id", auth, async (req, res, next) => {
 router.delete("/:id", auth, async (req, res, next) => {
     try {
         const deletedHostId = await hostService.deleteHostById(req.params.id);
-        res.status(200).json({ message: `Host with id ${deletedHostId} successfully deleted` });
+        if (deletedHostId !== null) {
+            res.status(200).json({ message: `Host with id ${req.params.id} successfully deleted` });
+        } else {
+            res.status(404).json({ message: `Host with ID ${req.params.id} not found.` });
+        }
     } catch (error) {
         next(error);
     }
